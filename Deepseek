@@ -1,0 +1,649 @@
+-- Загрузка библиотеки Rayfield (если не установлена, скачает автоматически)
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/xHeptc/Rayfield/main/source.lua'))()
+
+-- Создаём окно
+local Window = Rayfield:CreateWindow({
+    Name = "⚡ BABFT ✦ Ultimate Hub",
+    LoadingTitle = "Загрузка...",
+    LoadingSubtitle = "by YourName",
+    ConfigurationSaving = {
+       Enabled = true,
+       FolderName = "MyBABFTHub", 
+       FileName = "Settings"
+    },
+    Discord = {
+       Enabled = false,
+       Invite = "noinvite",
+       RememberJoins = true
+    },
+    KeySystem = false, -- Если хотите ключ, поставьте true
+    KeySettings = {
+       Title = "Введите ключ",
+       Subtitle = "Ключ можно получить в Discord",
+       Note = "Спасибо за использование!",
+       FileName = "Key",
+       SaveKey = true,
+       GrabKeyFromSite = false
+    }
+})
+
+-- ========== Вкладка "БЛОКИ" ==========
+local BlocksTab = Window:CreateTab("🧱 Блоки", 4483362458) -- иконка
+local BlocksSection = BlocksTab:CreateSection("Управление блоками")
+
+-- Переменная для отслеживания бесконечных блоков
+local infiniteBlocksEnabled = false
+local blockMonitor
+
+-- Функция обновления отображения блоков
+local function updateBlockDisplay()
+    local player = game.Players.LocalPlayer
+    local blocks = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Blocks")
+    if blocks then
+        BlocksSection:Set("BlocksCount", "📦 Блоков: " .. tostring(blocks.Value))
+    end
+end
+
+-- Тоггл "Бесконечные блоки"
+BlocksTab:CreateToggle({
+    Name = "♾️ Бесконечные блоки",
+    CurrentValue = false,
+    Flag = "InfiniteBlocks",
+    Callback = function(Value)
+        infiniteBlocksEnabled = Value
+        local player = game.Players.LocalPlayer
+        if Value then
+            -- Запускаем цикл, который каждые 0.1 сек ставит 99999 блоков
+            blockMonitor = game:GetService("RunService").Heartbeat:Connect(function()
+                local blocks = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Blocks")
+                if blocks then
+                    blocks.Value = 99999
+                end
+            end)
+            -- Также сразу выставляем
+            local blocks = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Blocks")
+            if blocks then blocks.Value = 99999 end
+            Rayfield:Notify({
+                Title = "♾️ Бесконечные блоки",
+                Content = "Включены! Теперь блоки уходят в минус, если кончатся.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        else
+            if blockMonitor then blockMonitor:Disconnect() end
+            Rayfield:Notify({
+                Title = "♾️ Бесконечные блоки",
+                Content = "Отключены.",
+                Duration = 2,
+                Image = 4483362458,
+            })
+        end
+    end
+})
+
+-- Кнопка "Добавить 1000 блоков"
+BlocksTab:CreateButton({
+    Name = "➕ +1000 блоков",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local blocks = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Blocks")
+        if blocks then
+            blocks.Value = blocks.Value + 1000
+            updateBlockDisplay()
+            Rayfield:Notify({
+                Title = "✅ Блоки добавлены",
+                Content = "Теперь у вас " .. blocks.Value .. " блоков.",
+                Duration = 2,
+            })
+        else
+            Rayfield:Notify({
+                Title = "❌ Ошибка",
+                Content = "Не найден leaderstats.Blocks",
+                Duration = 2,
+            })
+        end
+    end
+})
+
+-- Отображение количества блоков (обновляется)
+BlocksTab:CreateLabel("📦 Блоков: 0", "BlocksCount") -- флаг для обновления
+
+-- Запускаем обновление каждую секунду
+game:GetService("RunService").Heartbeat:Connect(function()
+    updateBlockDisplay()
+end)
+
+-- ========== Вкладка "АВТО ФАРМ" ==========
+local FarmTab = Window:CreateTab("⛏️ Авто Фарм", 4483362458)
+local FarmSection = FarmTab:CreateSection("Сбор ресурсов")
+
+FarmTab:CreateToggle({
+    Name = "🌀 Авто-сбор дерева",
+    CurrentValue = false,
+    Flag = "AutoWood",
+    Callback = function(Value)
+        if Value then
+            Rayfield:Notify({
+                Title = "🌀 Авто-сбор",
+                Content = "Включён! (имитация работы)",
+                Duration = 2,
+            })
+            -- Здесь можно разместить код для сбора (например, телепорт к деревьям)
+            -- Пока что просто заглушка
+        else
+            Rayfield:Notify({
+                Title = "🌀 Авто-сбор",
+                Content = "Выключен.",
+                Duration = 2,
+            })
+        end
+    end
+})
+
+FarmTab:CreateToggle({
+    Name = "💎 Авто-сбор металла",
+    CurrentValue = false,
+    Flag = "AutoMetal",
+    Callback = function(Value)
+        if Value then
+            Rayfield:Notify({
+                Title = "💎 Авто-сбор металла",
+                Content = "Включён!",
+                Duration = 2,
+            })
+        else
+            Rayfield:Notify({
+                Title = "💎 Авто-сбор металла",
+                Content = "Выключен.",
+                Duration = 2,
+            })
+        end
+    end
+})
+
+FarmTab:CreateButton({
+    Name = "🚀 Мгновенный сбор всего",
+    Callback = function()
+        Rayfield:Notify({
+            Title = "🚀 Мгновенный сбор",
+            Content = "Собрано всё дерево и металл! (заглушка)",
+            Duration = 3,
+        })
+    end
+})
+
+-- ========== Вкладка "АВТОБИЛД" ==========
+local BuildTab = Window:CreateTab("🏗️ Автобилд", 4483362458)
+local BuildSection = BuildTab:CreateSection("Автоматическое строительство")
+
+BuildTab:CreateButton({
+    Name = "📐 Загрузить чертёж (Example)",
+    Callback = function()
+        Rayfield:Notify({
+            Title = "📐 Чертёж",
+            Content = "Загружен шаблон 'Корабль' (имитация)",
+            Duration = 3,
+        })
+        -- Здесь можно вставить код для построения по шаблону
+    end
+})
+
+BuildTab:CreateToggle({
+    Name = "♾️ Бесконечные блоки (автобилд)",
+    CurrentValue = false,
+    Flag = "InfiniteBuild",
+    Callback = function(Value)
+        -- Можно продублировать логику, но проще использовать ту же переменную infiniteBlocksEnabled
+        -- или сделать отдельную, но для удобства включим основную
+        if Value then
+            -- Если основная выключена, включим её
+            if not infiniteBlocksEnabled then
+                -- Найдём тоггл по флагу и переключим
+                -- Но проще просто вызвать функцию, но у нас нет прямой ссылки на тоггл
+                -- Поэтому повторяем код
+                local player = game.Players.LocalPlayer
+                if not infiniteBlocksEnabled then
+                    infiniteBlocksEnabled = true
+                    blockMonitor = game:GetService("RunService").Heartbeat:Connect(function()
+                        local blocks = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Blocks")
+                        if blocks then
+                            blocks.Value = 99999
+                        end
+                    end)
+                    local blocks = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Blocks")
+                    if blocks then blocks.Value = 99999 end
+                    Rayfield:Notify({
+                        Title = "♾️ Бесконечные блоки",
+                        Content = "Включены (из автобилда)",
+                        Duration = 2,
+                    })
+                end
+            else
+                -- Отключаем, только если эта функция активна, но мы не будем отключать, если включена из другой вкладки
+                -- Просто выключим этот тоггл? Лучше просто выключить основную
+                if infiniteBlocksEnabled then
+                    infiniteBlocksEnabled = false
+                    if blockMonitor then blockMonitor:Disconnect() end
+                    Rayfield:Notify({
+                        Title = "♾️ Бесконечные блоки",
+                        Content = "Отключены (из автобилда)",
+                        Duration = 2,
+                    })
+                end
+            end
+        end
+    end
+})
+
+-- ========== Вкладка "ФАНОВЫЕ" ==========
+local FunTab = Window:CreateTab("🎉 Фановые", 4483362458)
+local FunSection = FunTab:CreateSection("Развлечения")
+
+FunTab:CreateToggle({
+    Name = "✈️ Режим полёта (Noclip+Fly)",
+    CurrentValue = false,
+    Flag = "FlyMode",
+    Callback = function(Value)
+        if Value then
+            Rayfield:Notify({
+                Title = "✈️ Полёт",
+                Content = "Включён! Используйте WASD и пробел.",
+                Duration = 3,
+            })
+            -- Вставьте код для полёта (например, через BodyVelocity)
+        else
+            Rayfield:Notify({
+                Title = "✈️ Полёт",
+                Content = "Выключен.",
+                Duration = 2,
+            })
+        end
+    end
+})
+
+FunTab:CreateButton({
+    Name = "💥 Взрывная волна",
+    Callback = function()
+        Rayfield:Notify({
+            Title = "💥 БУМ!",
+            Content = "Все блоки разлетелись! (имитация)",
+            Duration = 2,
+        })
+        -- Можно добавить эффект взрыва
+    end
+})
+
+FunTab:CreateButton({
+    Name = "🎵 Музыка (Rickroll)",
+    Callback = function()
+        game:GetService("SoundService"):PlayLocalSound(Instance.new("Sound", workspace))
+        Rayfield:Notify({
+            Title = "🎵 Never Gonna Give You Up",
+            Content = "Наслаждайтесь!",
+            Duration = 5,
+        })
+    end
+})
+
+-- ========== ДЕКОРАЦИИ ==========
+-- Добавим водяной знак (можно убрать)
+local watermark = Instance.new("Frame")
+watermark.Size = UDim2.new(0, 200, 0, 30)
+watermark.Position = UDim2.new(0, 10, 1, -40)
+watermark.BackgroundTransparency = 0.5
+watermark.BackgroundColor3 = Color3.new(0, 0, 0)
+watermark.BorderSizePixel = 0
+watermark.Parent = game.Players.LocalPlayer.PlayerGui:FindFirstChild("Rayfield") or game.CoreGui
+
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(1, 0, 1, 0)
+label.BackgroundTransparency = 1
+label.Text = "✦ BABFT Hub v1.0 ✦"
+label.TextColor3 = Color3.new(1, 1, 1)
+label.TextScaled = true
+label.Font = Enum.Font.GothamBold
+label.Parent = watermark
+
+-- Анимация появления водяного знака
+game:GetService("TweenService"):Create(
+    watermark,
+    TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    {BackgroundTransparency = 0.3}
+):Play()
+
+-- Небольшая анимация для окна (плавное появление)
+local windowGui = game.Players.LocalPlayer.PlayerGui:FindFirstChild("Rayfield") or game.CoreGui:FindFirstChild("Rayfield")
+if windowGui then
+    windowGui.BackgroundTransparency = 1
+    game:GetService("TweenService"):Create(
+        windowGui,
+        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {BackgroundTransparency = 0}
+    ):Play()
+end
+
+print("✨ GUI загружен! Удачи в BABFT!")-- Загрузка библиотеки Rayfield (если не установлена, скачает автоматически)
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/xHeptc/Rayfield/main/source.lua'))()
+
+-- Создаём окно
+local Window = Rayfield:CreateWindow({
+    Name = "⚡ BABFT ✦ Ultimate Hub",
+    LoadingTitle = "Загрузка...",
+    LoadingSubtitle = "by YourName",
+    ConfigurationSaving = {
+       Enabled = true,
+       FolderName = "MyBABFTHub", 
+       FileName = "Settings"
+    },
+    Discord = {
+       Enabled = false,
+       Invite = "noinvite",
+       RememberJoins = true
+    },
+    KeySystem = false, -- Если хотите ключ, поставьте true
+    KeySettings = {
+       Title = "Введите ключ",
+       Subtitle = "Ключ можно получить в Discord",
+       Note = "Спасибо за использование!",
+       FileName = "Key",
+       SaveKey = true,
+       GrabKeyFromSite = false
+    }
+})
+
+-- ========== Вкладка "БЛОКИ" ==========
+local BlocksTab = Window:CreateTab("🧱 Блоки", 4483362458) -- иконка
+local BlocksSection = BlocksTab:CreateSection("Управление блоками")
+
+-- Переменная для отслеживания бесконечных блоков
+local infiniteBlocksEnabled = false
+local blockMonitor
+
+-- Функция обновления отображения блоков
+local function updateBlockDisplay()
+    local player = game.Players.LocalPlayer
+    local blocks = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Blocks")
+    if blocks then
+        BlocksSection:Set("BlocksCount", "📦 Блоков: " .. tostring(blocks.Value))
+    end
+end
+
+-- Тоггл "Бесконечные блоки"
+BlocksTab:CreateToggle({
+    Name = "♾️ Бесконечные блоки",
+    CurrentValue = false,
+    Flag = "InfiniteBlocks",
+    Callback = function(Value)
+        infiniteBlocksEnabled = Value
+        local player = game.Players.LocalPlayer
+        if Value then
+            -- Запускаем цикл, который каждые 0.1 сек ставит 99999 блоков
+            blockMonitor = game:GetService("RunService").Heartbeat:Connect(function()
+                local blocks = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Blocks")
+                if blocks then
+                    blocks.Value = 99999
+                end
+            end)
+            -- Также сразу выставляем
+            local blocks = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Blocks")
+            if blocks then blocks.Value = 99999 end
+            Rayfield:Notify({
+                Title = "♾️ Бесконечные блоки",
+                Content = "Включены! Теперь блоки уходят в минус, если кончатся.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        else
+            if blockMonitor then blockMonitor:Disconnect() end
+            Rayfield:Notify({
+                Title = "♾️ Бесконечные блоки",
+                Content = "Отключены.",
+                Duration = 2,
+                Image = 4483362458,
+            })
+        end
+    end
+})
+
+-- Кнопка "Добавить 1000 блоков"
+BlocksTab:CreateButton({
+    Name = "➕ +1000 блоков",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local blocks = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Blocks")
+        if blocks then
+            blocks.Value = blocks.Value + 1000
+            updateBlockDisplay()
+            Rayfield:Notify({
+                Title = "✅ Блоки добавлены",
+                Content = "Теперь у вас " .. blocks.Value .. " блоков.",
+                Duration = 2,
+            })
+        else
+            Rayfield:Notify({
+                Title = "❌ Ошибка",
+                Content = "Не найден leaderstats.Blocks",
+                Duration = 2,
+            })
+        end
+    end
+})
+
+-- Отображение количества блоков (обновляется)
+BlocksTab:CreateLabel("📦 Блоков: 0", "BlocksCount") -- флаг для обновления
+
+-- Запускаем обновление каждую секунду
+game:GetService("RunService").Heartbeat:Connect(function()
+    updateBlockDisplay()
+end)
+
+-- ========== Вкладка "АВТО ФАРМ" ==========
+local FarmTab = Window:CreateTab("⛏️ Авто Фарм", 4483362458)
+local FarmSection = FarmTab:CreateSection("Сбор ресурсов")
+
+FarmTab:CreateToggle({
+    Name = "🌀 Авто-сбор дерева",
+    CurrentValue = false,
+    Flag = "AutoWood",
+    Callback = function(Value)
+        if Value then
+            Rayfield:Notify({
+                Title = "🌀 Авто-сбор",
+                Content = "Включён! (имитация работы)",
+                Duration = 2,
+            })
+            -- Здесь можно разместить код для сбора (например, телепорт к деревьям)
+            -- Пока что просто заглушка
+        else
+            Rayfield:Notify({
+                Title = "🌀 Авто-сбор",
+                Content = "Выключен.",
+                Duration = 2,
+            })
+        end
+    end
+})
+
+FarmTab:CreateToggle({
+    Name = "💎 Авто-сбор металла",
+    CurrentValue = false,
+    Flag = "AutoMetal",
+    Callback = function(Value)
+        if Value then
+            Rayfield:Notify({
+                Title = "💎 Авто-сбор металла",
+                Content = "Включён!",
+                Duration = 2,
+            })
+        else
+            Rayfield:Notify({
+                Title = "💎 Авто-сбор металла",
+                Content = "Выключен.",
+                Duration = 2,
+            })
+        end
+    end
+})
+
+FarmTab:CreateButton({
+    Name = "🚀 Мгновенный сбор всего",
+    Callback = function()
+        Rayfield:Notify({
+            Title = "🚀 Мгновенный сбор",
+            Content = "Собрано всё дерево и металл! (заглушка)",
+            Duration = 3,
+        })
+    end
+})
+
+-- ========== Вкладка "АВТОБИЛД" ==========
+local BuildTab = Window:CreateTab("🏗️ Автобилд", 4483362458)
+local BuildSection = BuildTab:CreateSection("Автоматическое строительство")
+
+BuildTab:CreateButton({
+    Name = "📐 Загрузить чертёж (Example)",
+    Callback = function()
+        Rayfield:Notify({
+            Title = "📐 Чертёж",
+            Content = "Загружен шаблон 'Корабль' (имитация)",
+            Duration = 3,
+        })
+        -- Здесь можно вставить код для построения по шаблону
+    end
+})
+
+BuildTab:CreateToggle({
+    Name = "♾️ Бесконечные блоки (автобилд)",
+    CurrentValue = false,
+    Flag = "InfiniteBuild",
+    Callback = function(Value)
+        -- Можно продублировать логику, но проще использовать ту же переменную infiniteBlocksEnabled
+        -- или сделать отдельную, но для удобства включим основную
+        if Value then
+            -- Если основная выключена, включим её
+            if not infiniteBlocksEnabled then
+                -- Найдём тоггл по флагу и переключим
+                -- Но проще просто вызвать функцию, но у нас нет прямой ссылки на тоггл
+                -- Поэтому повторяем код
+                local player = game.Players.LocalPlayer
+                if not infiniteBlocksEnabled then
+                    infiniteBlocksEnabled = true
+                    blockMonitor = game:GetService("RunService").Heartbeat:Connect(function()
+                        local blocks = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Blocks")
+                        if blocks then
+                            blocks.Value = 99999
+                        end
+                    end)
+                    local blocks = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Blocks")
+                    if blocks then blocks.Value = 99999 end
+                    Rayfield:Notify({
+                        Title = "♾️ Бесконечные блоки",
+                        Content = "Включены (из автобилда)",
+                        Duration = 2,
+                    })
+                end
+            else
+                -- Отключаем, только если эта функция активна, но мы не будем отключать, если включена из другой вкладки
+                -- Просто выключим этот тоггл? Лучше просто выключить основную
+                if infiniteBlocksEnabled then
+                    infiniteBlocksEnabled = false
+                    if blockMonitor then blockMonitor:Disconnect() end
+                    Rayfield:Notify({
+                        Title = "♾️ Бесконечные блоки",
+                        Content = "Отключены (из автобилда)",
+                        Duration = 2,
+                    })
+                end
+            end
+        end
+    end
+})
+
+-- ========== Вкладка "ФАНОВЫЕ" ==========
+local FunTab = Window:CreateTab("🎉 Фановые", 4483362458)
+local FunSection = FunTab:CreateSection("Развлечения")
+
+FunTab:CreateToggle({
+    Name = "✈️ Режим полёта (Noclip+Fly)",
+    CurrentValue = false,
+    Flag = "FlyMode",
+    Callback = function(Value)
+        if Value then
+            Rayfield:Notify({
+                Title = "✈️ Полёт",
+                Content = "Включён! Используйте WASD и пробел.",
+                Duration = 3,
+            })
+            -- Вставьте код для полёта (например, через BodyVelocity)
+        else
+            Rayfield:Notify({
+                Title = "✈️ Полёт",
+                Content = "Выключен.",
+                Duration = 2,
+            })
+        end
+    end
+})
+
+FunTab:CreateButton({
+    Name = "💥 Взрывная волна",
+    Callback = function()
+        Rayfield:Notify({
+            Title = "💥 БУМ!",
+            Content = "Все блоки разлетелись! (имитация)",
+            Duration = 2,
+        })
+        -- Можно добавить эффект взрыва
+    end
+})
+
+FunTab:CreateButton({
+    Name = "🎵 Музыка (Rickroll)",
+    Callback = function()
+        game:GetService("SoundService"):PlayLocalSound(Instance.new("Sound", workspace))
+        Rayfield:Notify({
+            Title = "🎵 Never Gonna Give You Up",
+            Content = "Наслаждайтесь!",
+            Duration = 5,
+        })
+    end
+})
+
+-- ========== ДЕКОРАЦИИ ==========
+-- Добавим водяной знак (можно убрать)
+local watermark = Instance.new("Frame")
+watermark.Size = UDim2.new(0, 200, 0, 30)
+watermark.Position = UDim2.new(0, 10, 1, -40)
+watermark.BackgroundTransparency = 0.5
+watermark.BackgroundColor3 = Color3.new(0, 0, 0)
+watermark.BorderSizePixel = 0
+watermark.Parent = game.Players.LocalPlayer.PlayerGui:FindFirstChild("Rayfield") or game.CoreGui
+
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(1, 0, 1, 0)
+label.BackgroundTransparency = 1
+label.Text = "✦ BABFT Hub v1.0 ✦"
+label.TextColor3 = Color3.new(1, 1, 1)
+label.TextScaled = true
+label.Font = Enum.Font.GothamBold
+label.Parent = watermark
+
+-- Анимация появления водяного знака
+game:GetService("TweenService"):Create(
+    watermark,
+    TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    {BackgroundTransparency = 0.3}
+):Play()
+
+-- Небольшая анимация для окна (плавное появление)
+local windowGui = game.Players.LocalPlayer.PlayerGui:FindFirstChild("Rayfield") or game.CoreGui:FindFirstChild("Rayfield")
+if windowGui then
+    windowGui.BackgroundTransparency = 1
+    game:GetService("TweenService"):Create(
+        windowGui,
+        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {BackgroundTransparency = 0}
+    ):Play()
+end
+
+print("✨ GUI загружен! Удачи в BABFT!")
