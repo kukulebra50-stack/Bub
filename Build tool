@@ -1,0 +1,22 @@
+local BuildingTool = game:GetService("Players").LocalPlayer.Character.BuildingTool.RF
+BuildingTool:InvokeServer(
+    "SensorBlock",
+    137,
+    workspace.WhiteZone,
+    CFrame.new(0, -3.0000000054978e+38, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1),
+    true
+)
+
+task.wait(0.5) 
+
+local ScalingTool = game:GetService("Players").LocalPlayer.Backpack.ScalingTool.RF
+local MyBlock = workspace.Blocks[game:GetService("Players").LocalPlayer.Name].SensorBlock
+
+for i = 1, 10 do
+    ScalingTool:InvokeServer(
+        MyBlock,
+        Vector3.new(251.79899597168, 1.1754999560161e-38, 298.99996948242),
+        CFrame.new(-53.565689086914, -3.0000000054978e+38, -345.50686645508, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+    )
+    task.wait(0.1)
+end
